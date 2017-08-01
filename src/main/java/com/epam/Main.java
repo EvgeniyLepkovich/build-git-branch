@@ -1,5 +1,6 @@
 package com.epam;
 
+import com.epam.model.GitRepository;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -16,16 +17,16 @@ import java.util.List;
 
 public class Main {
 
+    private static final String CURRENT_GIT_PATH = "C:\\Users\\Yayheniy_Lepkovich\\JavaProjects\\lyty\\lyty-corporate\\.git";
+    private static final String CURRENT_GIT_BRANCH = "lyty-corporate";
+
     public static void main(String[] args) {
         String pathSh = "C:\\Users\\Yayheniy_Lepkovich\\JavaProjects\\lyty\\lyty-corporate\\runShell.bat";
         try {
-            Iterable<RevCommit> commitsSSH = getCommitsSSH();
-            ArrayList<RevCommit> revCommits = new ArrayList<>();
-            commitsSSH.iterator().forEachRemaining(revCommits::add);
-            Collections.reverse(revCommits);
+            GitRepository gitRepository = new GitRepository(CURRENT_GIT_PATH);
+            ArrayList<RevCommit> revCommits = gitRepository.getCommitsSSH(CURRENT_GIT_BRANCH, true);
             for(RevCommit commit : revCommits) {
-                checkoutCommit(commit.getName());
-//                Process process = new ProcessBuilder("sh", pathSh).start();
+                gitRepository.checkout(commit.getName());
                 Process process = new ProcessBuilder(pathSh, commit.getName()).start();
 
                 BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -41,25 +42,11 @@ public class Main {
                     System.out.println(strError);
                 }
             }
+            gitRepository.checkout(CURRENT_GIT_BRANCH);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (GitAPIException e) {
             e.printStackTrace();
         }
-    }
-
-    private static Iterable<RevCommit> getCommitsSSH() throws IOException, GitAPIException {
-        Repository repository = new FileRepository("C:\\Users\\Yayheniy_Lepkovich\\JavaProjects\\lyty\\lyty-corporate\\.git");
-        Git git = new Git(repository);
-        Iterable<RevCommit> revCommits = git.log()
-                .add(repository.resolve("lyty-corporate"))
-                .call();
-        return revCommits;
-    }
-
-    private static void checkoutCommit(String commitSSH) throws IOException, GitAPIException {
-        Repository repository = new FileRepository("C:\\Users\\Yayheniy_Lepkovich\\JavaProjects\\lyty\\lyty-corporate\\.git");
-        Git git = new Git(repository);
-        git.checkout().setName(commitSSH).call();
     }
 }
