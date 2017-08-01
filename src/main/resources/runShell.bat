@@ -1,0 +1,1 @@
+sh C:\Users\Yayheniy_Lepkovich\JavaProjects\lyty\lyty-corporate\isBuild.sh %1
